@@ -1,19 +1,20 @@
 import React from 'react'
 import { FaTrash } from "react-icons/fa";
 
-const DeleteItem = ({ items, item_id, fetchItems }) => {
+const DeleteBag = ({ bags, bag_id, fetchBags, fetchItems }) => {
 
 	const handleClick = async () => {
-		if (items.length === 1) {
-			alert('You must have at least one item');
+		if (bags.length === 1) {
+			alert('You must have at least one bag');
 			return;
 		}
-		await fetch(`http://localhost:8000/deleteItem/${item_id}`, {
+		await fetch(`http://localhost:8000/deleteBag/${bag_id}`, {
 			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 		});
+		fetchBags();
 		fetchItems();
 	};
 
@@ -24,4 +25,4 @@ const DeleteItem = ({ items, item_id, fetchItems }) => {
 	)
   }
   
-  export default DeleteItem
+  export default DeleteBag

@@ -10,6 +10,7 @@ CREATE TABLE bags (
 	title VARCHAR(40),
 	color INT NOT NULL,
 	trip_id VARCHAR(255) NOT NULL,
+	creation_date TIMESTAMP NOT NULL,
 	FOREIGN KEY (trip_id) REFERENCES trips(id)
 );
 
@@ -28,12 +29,12 @@ INSERT INTO trips (id, pin, last_modification) VALUES
 ('rice-tree', 5678, CURRENT_TIMESTAMP);
 
 -- Inserting data into the bags table
-INSERT INTO bags (title, color, trip_id) VALUES 
-('Backpack', 1, 'cold-human'),
-('Big suitcase', 2, 'cold-human'),
-('Me', 3, 'cold-human'),
-('Shoulder bag', 1, 'rice-tree'),
-('Me', 2, 'rice-tree');
+INSERT INTO bags (title, color, trip_id, creation_date) VALUES 
+('Backpack', 1, 'cold-human', CURRENT_TIMESTAMP),
+('Big suitcase', 2, 'cold-human', CURRENT_TIMESTAMP),
+('Me', 3, 'cold-human', CURRENT_TIMESTAMP),
+('Shoulder bag', 1, 'rice-tree', CURRENT_TIMESTAMP),
+('Me', 2, 'rice-tree', CURRENT_TIMESTAMP);
 
 -- Inserting data into the items table
 INSERT INTO items (title, bag_id, is_checked, creation_date) VALUES 

@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import ListItem from './ListItem'
 import BagSelector from './BagSelector'
-import BagDropdown from './dropdown/BagDropdown'
 import NewItem from './NewItem'
 import DeleteItem from './DeleteItem'
 
-const ItemsManager = ({ passphrase }) => {
+const ItemsManager = ({ passphrase, items, bags, fetchBags, fetchItems }) => {
 
-	const [dropdownOpen, setDropdownOpen] = useState(false);
-	const [selectedItem, setSelectedItem] = useState(null);
-	const [items, setItems] = useState([]);
+	// const [isLoading, setIsLoading] = useState(true);
 
 	const handleCheck = async (item_id) => {
 		await fetch(`http://localhost:8000/changeChecker/${item_id}`, {
@@ -21,37 +18,19 @@ const ItemsManager = ({ passphrase }) => {
 		fetchItems();
 	};
 
-	const fetchItems = async () => {
-        const response = await fetch(`http://localhost:8000/${passphrase}/items`);
-        const data = await response.json();
-    	setItems(data);
-		console.log(data);
-    }
-
-    const onBagSelected = async (bag) => {
-		if (!bag) {
-			bag = { id: -1 };
-		}
-        if (selectedItem) {
-            await fetch(`http://localhost:8000/changeBag/${selectedItem.id}/${bag.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            });
-			fetchItems();
-			setDropdownOpen(!dropdownOpen);
-        }
-    };
-
-	const handleDropdown = async (item) => {
-		setDropdownOpen(!dropdownOpen);
-		setSelectedItem(item);
-	};
-
 	useEffect(() => {
-        fetchItems();
+        // const fetchData = async () => {
+		// 	await fetchItems();
+		// 	setIsLoading(false);
+		// };
+		// fetchData();
+		fetchItems();
     }, []);
+	
+
+	// if (isLoading) {
+	// 	return <div>Loading...</div>;
+	// }
 
 	return (
 	  <div className="list-header">
@@ -61,9 +40,10 @@ const ItemsManager = ({ passphrase }) => {
 				<div className='item-group' key={item.id}>
 					<BagSelector 
 						passphrase={passphrase}
-						bag_id={item.bag_id}
+						bags={bags}
+						fetchBags={fetchBags}
+						fetchItems={fetchItems}
 						item={item}
-						clickFunction={handleDropdown}
 						/>
 					<ListItem item={item} />
 					<input
@@ -72,17 +52,10 @@ const ItemsManager = ({ passphrase }) => {
 						checked={item.is_checked}
 						onClick={() => handleCheck(item.id)}>
 					</input>
-					<DeleteItem item_id={item.id} fetchItems={fetchItems} />
+					<DeleteItem items={items} item_id={item.id} fetchItems={fetchItems} />
 				</div>
 			))}
 			<NewItem bag_id={items[0] ? items[0].bag_id : null} fetchItems={fetchItems} />
-			{dropdownOpen &&
-				<div className='dropdown-wrapper'>
-				<BagDropdown
-					passphrase={passphrase}
-					onBagSelected={onBagSelected}
-				/>
-				</div>}
 		</div>
 	  </div>
 	)

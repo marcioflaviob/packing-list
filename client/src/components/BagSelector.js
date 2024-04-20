@@ -1,34 +1,71 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react";
+import DropdownOption from "./DropdownOption";
 
-const BagSelector = ({ passphrase, bag_id, clickFunction, item }) => {
+const BagSelector = ({ passphrase, item, bags, fetchBags, fetchItems }) => {
+  const [bag, setBag] = useState(null);
+  const colors = [
+    "4793AF",
+    "FFC470",
+    "DD5746",
+    "8B322C",
+    "D9EDBF",
+    "FF9800",
+    "2C7865",
+    "90D26D",
+  ];
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-	const [bag, setBag] = useState(null);
-	// const [bags, setBags] = useState([]);
-	// const [selectedBag, setSelectedBag] = useState(null);
+  const handleDropdown = async () => {
+    setDropdownOpen(!dropdownOpen);
+  };
 
-	useEffect(() => {
+  const onBagSelected = async (selected_bag) => {
+    await fetch(
+      `http://localhost:8000/changeBag/${item.id}/${selected_bag.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    fetchItems();
+    fetchBags();
+    setDropdownOpen(!dropdownOpen);
+  };
 
-		const fetchBag = async () => {
-			const response = await fetch(`http://localhost:8000/getBagFromId/${bag_id}`);
-			const data = await response.json();
-			setBag(data[0]);
-		}
-		
-		// const fetchBags = async () => {
-		// 	const response = await fetch(`http://localhost:8000/${passphrase}/bags`);
-		// 	const data = await response.json();
-		// 	setBags(data);
-		// 	setSelectedBag(bag_id);
-		// };
-		fetchBag();
-	  }, [passphrase, bag_id]);
+  useEffect(() => {
+    fetchBags();
+  }, []);
 
-	return (
-	  <div className="BagSelector" onClick={() => clickFunction(item)}>
-		<p className="_bagTitle">{bag && bag.title}</p>
-		<span className="ArrowDown">▼</span>
-	  </div>
-	)
-  }
-  
-  export default BagSelector
+  useEffect(() => {
+    const foundBag = bags.find((b) => b.id === item.bag_id);
+    setBag(foundBag);
+  }, [bags, item]);
+
+  return (
+    <div className="outer-div">
+      <div
+        className="BagSelector"
+        onClick={handleDropdown}
+        style={bag ? { backgroundColor: `#${colors[bag.color]}` } : {}}
+      >
+        <p className="_bagTitle">{bag && bag.title}</p>
+        <span className="ArrowDown">▼</span>
+      </div>
+      {dropdownOpen && (
+        <div className="dropdown-wrapper">
+          {bags.map((selected_bag) => (
+            <DropdownOption
+              bag={selected_bag}
+              onClick={() => onBagSelected(selected_bag)}
+			  colors={colors}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BagSelector;
