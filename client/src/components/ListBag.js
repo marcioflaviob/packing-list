@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 
-const ListBag = ({ bag }) => {
+const ListBag = ({ bag, fetchBags, fetchItems }) => {
 	const [title, setTitle] = useState(bag.title);
 
 	const handleInputChange = (event) => {
 		setTitle(event.target.value);
+		handleInputBlur();
 	  };
   
 	  const handleInputBlur = async () => {
@@ -14,12 +15,14 @@ const ListBag = ({ bag }) => {
 			  'Content-Type': 'application/json'
 			},
 		  });
+		  fetchItems();
+		  fetchBags();
 		};
 
 	return (
 	  <div key={bag.id}>
 		<input	type="text" 
-				className="BagTitle"
+				className="ItemTitle"
 				value={title}
 				onChange={handleInputChange}
 				onBlur={handleInputBlur}

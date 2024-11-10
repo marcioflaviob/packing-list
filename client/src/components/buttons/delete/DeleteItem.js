@@ -1,7 +1,7 @@
 import React from 'react'
 import { FaTrash } from "react-icons/fa";
 
-const DeleteItem = ({ items, item_id, fetchItems }) => {
+const DeleteItem = ({ items, item_id, fetchItems, fetchBags }) => {
 
 	const handleClick = async () => {
 		if (items.length === 1) {
@@ -15,6 +15,7 @@ const DeleteItem = ({ items, item_id, fetchItems }) => {
 			},
 		});
 		fetchItems();
+		fetchBags();
 	};
 
 	return (

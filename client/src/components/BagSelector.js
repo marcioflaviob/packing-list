@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import DropdownOption from "./DropdownOption";
+import DropdownOption from "./dropdown/DropdownOption";
 
 const BagSelector = ({ passphrase, item, bags, fetchBags, fetchItems }) => {
   const [bag, setBag] = useState(null);
@@ -15,7 +15,8 @@ const BagSelector = ({ passphrase, item, bags, fetchBags, fetchItems }) => {
   ];
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const handleDropdown = async () => {
+  const handleDropdown = async (e) => {
+    e.stopPropagation();
     setDropdownOpen(!dropdownOpen);
   };
 
@@ -36,15 +37,31 @@ const BagSelector = ({ passphrase, item, bags, fetchBags, fetchItems }) => {
 
   useEffect(() => {
     fetchBags();
-  }, []);
+  }, [fetchBags]);
 
   useEffect(() => {
     const foundBag = bags.find((b) => b.id === item.bag_id);
     setBag(foundBag);
   }, [bags, item]);
 
+  useEffect(() => { // useEffect to add event listener to close dropdown when clicking outside
+    const handleDocumentClick = () => {
+        setDropdownOpen(false);
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+
+    return () => {
+        document.removeEventListener('click', handleDocumentClick);
+    };
+  }, []);
+
+  const handleDropdownClick = (e) => {
+      e.stopPropagation();
+  };
+
   return (
-    <div className="outer-div">
+    <div className="outer-div" onClick={handleDropdownClick}>
       <div
         className="BagSelector"
         onClick={handleDropdown}
@@ -54,6 +71,7 @@ const BagSelector = ({ passphrase, item, bags, fetchBags, fetchItems }) => {
         <span className="ArrowDown">▼</span>
       </div>
       {dropdownOpen && (
+        // This div should be a container for the dropdown options
         <div className="dropdown-wrapper">
           {bags.map((selected_bag) => (
             <DropdownOption

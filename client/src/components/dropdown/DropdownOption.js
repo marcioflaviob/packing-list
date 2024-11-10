@@ -1,7 +1,6 @@
 import React from "react";
 
 const DropdownOption = ({ bag, onClick, colors }) => {
-  console.log(bag);
   return (
     <div
       className="BagSelector"

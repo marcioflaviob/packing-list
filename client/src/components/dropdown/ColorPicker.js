@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CgColorPicker } from "react-icons/cg";
 
 const ColorPicker = ({ bag, fetchItems, fetchBags }) => {
@@ -7,7 +7,8 @@ const ColorPicker = ({ bag, fetchItems, fetchBags }) => {
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [selectedColor, setSelectedColor] = useState(colors[bag.color]);
 
-	const handleClick = () => {
+	const handleClick = (e) => {
+		e.stopPropagation();
 		setDropdownOpen(!dropdownOpen);
 	};
 
@@ -18,15 +19,30 @@ const ColorPicker = ({ bag, fetchItems, fetchBags }) => {
 				'Content-Type': 'application/json'
 			},
 		});
+		setSelectedColor(colors[index]);
 		fetchItems();
 		fetchBags();
 		setDropdownOpen(!dropdownOpen);
 	};
 
-	console.log(bag);
+	useEffect(() => { // useEffect to add event listener to close dropdown when clicking outside
+        const handleDocumentClick = () => {
+            setDropdownOpen(false);
+        };
+
+        document.addEventListener('click', handleDocumentClick);
+
+        return () => {
+            document.removeEventListener('click', handleDocumentClick);
+        };
+    }, []);
+
+	const handleDropdownClick = (e) => {
+        e.stopPropagation();
+    };
 
 	return (
-		<div>
+		<div onClick={handleDropdownClick}>
 			<div>
 					<div
 						className='color-option'
@@ -38,9 +54,8 @@ const ColorPicker = ({ bag, fetchItems, fetchBags }) => {
 					<div className='dropdown-bag-wrapper'>
 						{colors.map((color, index) => (
 							<div
-								className='dot'
 								key={index}
-								className={`color-option ${selectedColor === color ? 'selected' : ''}`}
+								className={`dot color-option ${selectedColor === color ? 'selected' : ''}`}
 								style={{ backgroundColor: `#${color}` }}
 								onClick={() => handleColorSelect(index)}
 							/>

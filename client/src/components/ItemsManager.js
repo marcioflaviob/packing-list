@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useEffect } from 'react'
 import ListItem from './ListItem'
 import BagSelector from './BagSelector'
-import NewItem from './NewItem'
-import DeleteItem from './DeleteItem'
+import NewItem from './buttons/new/NewItem'
+import DeleteItem from './buttons/delete/DeleteItem'
 
 const ItemsManager = ({ passphrase, items, bags, fetchBags, fetchItems }) => {
 
@@ -16,6 +16,7 @@ const ItemsManager = ({ passphrase, items, bags, fetchBags, fetchItems }) => {
 			},
 		});
 		fetchItems();
+		fetchBags();
 	};
 
 	useEffect(() => {
@@ -25,7 +26,7 @@ const ItemsManager = ({ passphrase, items, bags, fetchBags, fetchItems }) => {
 		// };
 		// fetchData();
 		fetchItems();
-    }, []);
+    }, [fetchItems]);
 	
 
 	// if (isLoading) {
@@ -38,21 +39,16 @@ const ItemsManager = ({ passphrase, items, bags, fetchBags, fetchItems }) => {
 		<div>
 			{items.map((item) => (
 				<div className='item-group' key={item.id}>
-					<BagSelector 
-						passphrase={passphrase}
-						bags={bags}
-						fetchBags={fetchBags}
-						fetchItems={fetchItems}
-						item={item}
-						/>
-					<ListItem item={item} />
 					<input
 						className='ItemCheckbox'
 						type='checkbox' 
 						checked={item.is_checked}
-						onClick={() => handleCheck(item.id)}>
+						onChange={() => handleCheck(item.id)}>
 					</input>
-					<DeleteItem items={items} item_id={item.id} fetchItems={fetchItems} />
+					<ListItem item={item} />
+					<BagSelector passphrase={passphrase} bags={bags} fetchBags={fetchBags}
+						fetchItems={fetchItems} item={item} />
+					<DeleteItem items={items} item_id={item.id} fetchItems={fetchItems} fetchBags={fetchBags} />
 				</div>
 			))}
 			<NewItem bag_id={items[0] ? items[0].bag_id : null} fetchItems={fetchItems} />

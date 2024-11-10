@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 const ListItem = ({ item }) => {
-	const [title, setTitle] = useState(item.title);
+	const [title, setTitle] = useState(item.title || '');
 
 	const handleInputChange = (event) => {
 	  setTitle(event.target.value);

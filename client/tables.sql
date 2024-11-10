@@ -1,7 +1,11 @@
 
+DROP TABLE items;
+DROP TABLE bags;
+DROP TABLE trips;
+
 CREATE TABLE trips (
 	id VARCHAR(255) NOT NULL PRIMARY KEY,
-	pin INT,
+	pin VARCHAR(255),
 	last_modification TIMESTAMP NOT NULL
 );
 
@@ -24,9 +28,9 @@ CREATE TABLE items (
 );
 
 -- Inserting data into the trips table
-INSERT INTO trips (id, pin, last_modification) VALUES 
-('cold-human', 1234, CURRENT_TIMESTAMP),
-('rice-tree', 5678, CURRENT_TIMESTAMP);
+INSERT INTO trips (id, last_modification) VALUES 
+('cold-human', CURRENT_TIMESTAMP),
+('rice-tree', CURRENT_TIMESTAMP);
 
 -- Inserting data into the bags table
 INSERT INTO bags (title, color, trip_id, creation_date) VALUES 
