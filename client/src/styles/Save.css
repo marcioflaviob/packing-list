@@ -1,0 +1,94 @@
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 500px;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9998;
+	cursor: default;
+}
+
+.modal-save {
+	position: relative;
+	background: white;
+	padding: 20px;
+	border-radius: 20px;
+	text-align: center;
+	width: 400px;
+	z-index: 9999;
+  }
+
+  .modal-content {
+    margin-top: 30px;
+}
+  
+  .modal-save button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.lock-button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 0px 9px;
+    margin: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+	background-color: #2b72be;
+    color: #000; /* Black text */
+  }
+
+.lock-button:hover {
+	background-color: #2b72beb2;
+}
+
+.modal-save .gray-button {
+background-color: #d3d3d3; /* Light gray background */
+color: #000; /* Black text */
+}
+
+.modal-save .gray-button:hover {
+    background-color: #bfbfbf; /* Darker gray on hover */
+}
+
+.fields {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-content input {
+	margin-bottom: 10px;
+	padding: 10px;
+	font-size: 16px;
+	width: 20px;
+	height: 35px;
+	text-align: center;
+	background-color: rgba(242, 243, 244);
+	border: 1px solid rgb(167, 167, 167);
+	border-radius: 6px;
+	margin-right: 10px; /* Add space between inputs */
+  }
+
+.modal-alert {
+	color: rgb(177, 0, 0);
+	font-size: 14px;
+	display: none;
+}

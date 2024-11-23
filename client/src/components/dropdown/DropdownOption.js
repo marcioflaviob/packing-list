@@ -3,7 +3,7 @@ import React from "react";
 const DropdownOption = ({ bag, onClick, colors }) => {
   return (
     <div
-      className="BagSelector"
+      className="BagSelector-dropdown"
       onClick={() => onClick(bag)}
       style={bag ? { backgroundColor: `#${colors[bag.color]}` } : {}}
     >

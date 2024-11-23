@@ -1,0 +1,64 @@
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 500px;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9998;
+	cursor: default;
+}
+
+.modal {
+	position: relative;
+	background: white;
+	padding: 20px;
+	border-radius: 5px;
+	text-align: center;
+	width: 400px;
+	z-index: 9999;
+  }
+
+  .modal-content {
+    margin-top: 30px;
+}
+  
+  .modal button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal .gray-button {
+    background-color: #d3d3d3; /* Light gray background */
+    color: #000; /* Black text */
+}
+
+.modal .gray-button:hover {
+    background-color: #bfbfbf; /* Darker gray on hover */
+}
+
+.modal .delete-button {
+    background-color: #e35656; /* Red background */
+    color: #fff; /* White text */
+}
+
+.modal .delete-button:hover {
+    background-color: #cc4c4c; /* Darker red on hover */
+}
+
+.close-modal-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #000; /* Black color for the close button */
+}

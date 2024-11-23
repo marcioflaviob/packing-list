@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const ListBag = ({ bag, fetchBags, fetchItems }) => {
+const ListBag = ({ bag, fetchBags, fetchItems, onFocus, onBlur }) => {
 	const [title, setTitle] = useState(bag.title);
 
 	const handleInputChange = (event) => {
@@ -17,7 +17,16 @@ const ListBag = ({ bag, fetchBags, fetchItems }) => {
 		  });
 		  fetchItems();
 		  fetchBags();
+		  if (onBlur) {
+			onBlur();
+		  }
 		};
+
+		const handleInputFocus = () => {
+			if (onFocus) {
+			  onFocus();
+			}
+		  };
 
 	return (
 	  <div key={bag.id}>
@@ -26,6 +35,7 @@ const ListBag = ({ bag, fetchBags, fetchItems }) => {
 				value={title}
 				onChange={handleInputChange}
 				onBlur={handleInputBlur}
+				onFocus={handleInputFocus}
 				/>
 	  </div>
 	)

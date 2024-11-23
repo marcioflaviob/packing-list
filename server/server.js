@@ -6,10 +6,13 @@ const cors = require('cors')
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
+const e = require('express')
 
 const diceware = fs.readFileSync('diceware.txt', 'utf8').split('\n');
 
 const hasPin = {};
+
+const isUpdated = {};
 
 app.use(cors())
 app.use(bodyParser.json());
@@ -44,8 +47,6 @@ app.get('/getPassphrase', (req, res) => {
 
 app.put('/addPin', async (req, res) => {
 	try {
-		console.log('we are here');
-		console.log(req.body);
 		const { passphrase } = req.body;
 		const { pin } = req.body;
 		// Hash the pin
@@ -53,9 +54,6 @@ app.put('/addPin', async (req, res) => {
 			res.sendStatus(409);
 			return;
 		}
-		console.log('we are here and the passphrase is');
-		console.log(passphrase);
-		console.log(pin);
 		const hashedPin = await bcrypt.hash(pin, 10);
 		await pool.query('UPDATE trips SET pin = $1 WHERE id = $2', [hashedPin, passphrase]);
 		hasPin[passphrase] = true;
@@ -68,10 +66,29 @@ app.put('/addPin', async (req, res) => {
 
 app.get('/hasPin/:passphrase', async (req, res) => {
 	const { passphrase } = req.params;
-	if (hasPin[passphrase]) {
-		res.send(true);
-	} else {
-		res.send(false);
+	if (hasPin[passphrase] == undefined) {
+		const result = await pool.query('SELECT pin FROM trips WHERE id = $1', [passphrase]);
+		if (result.rowCount === 0) {
+			res.sendStatus(400);
+			return;
+		}
+		if (result.rows[0].pin) {
+			hasPin[passphrase] = true;
+			console.log('Has PIN');
+			res.send(true);
+		} else {
+			hasPin[passphrase] = false;
+			console.log('Does not have PIN');
+			res.send(false);
+		}
+	} else { // Optimization to avoid querying the database multiple times
+		if (hasPin[passphrase]) {
+			console.log('Has PIN');
+			res.send(true);
+		} else {
+			console.log('Does not have PIN');
+			res.send(false);
+		}
 	}
 });
 
@@ -79,10 +96,15 @@ app.post('/checkPin', async (req, res) => {
 	try {
 		const { passphrase } = req.body;
 		const { pin } = req.body;
-		const hashedPin = await pool.query('SELECT pin FROM trips WHERE id = $1', [passphrase]);
+		const result = await pool.query('SELECT pin FROM trips WHERE id = $1', [passphrase]);
+		console.log(result.rows);
+        const hashedPin = result.rows[0].pin; // Extract the hashed PIN from the query result
+
 		if (await bcrypt.compare(pin, hashedPin)) {
+			console.log('Correct PIN');
 			res.send(true);
 		} else {
+			console.log('Incorrect PIN');
 			res.send(false);
 		}
 	} catch (err) {
@@ -108,10 +130,12 @@ app.get(('/:id/items'), async (req, res) => {
 
 app.post(('/addItem/:bag_id'), async (req, res) => {
 	try {
-	  const { bag_id } = req.params
-	  await pool.query(`INSERT INTO items (bag_id, is_checked, creation_date) 
-	  					VALUES ($1, FALSE, CURRENT_TIMESTAMP)`, [bag_id])
-	  res.sendStatus(200);
+		const { bag_id } = req.params
+		const passphrase = await pool.query('SELECT trip_id FROM bags WHERE id = $1', [bag_id])
+		await pool.query(`INSERT INTO items (bag_id, is_checked, creation_date) 
+						VALUES ($1, FALSE, CURRENT_TIMESTAMP)`, [bag_id])
+		isUpdated[passphrase] = true;
+		res.sendStatus(200);
 	} catch (err) {
 	  console.error(err);
 	  res.sendStatus(500);
@@ -120,10 +144,11 @@ app.post(('/addItem/:bag_id'), async (req, res) => {
 
   app.post(('/addBag/:passphrase'), async (req, res) => {
 	try {
-	  const { passphrase } = req.params
-	  await pool.query(`INSERT INTO bags (title, color, trip_id, creation_date) 
-	  					VALUES ('New Bag', 1, $1, CURRENT_TIMESTAMP)`, [passphrase])
-	  res.sendStatus(200);
+		const { passphrase } = req.params
+		await pool.query(`INSERT INTO bags (title, color, trip_id, creation_date) 
+						VALUES ('New Bag', 1, $1, CURRENT_TIMESTAMP)`, [passphrase])
+		isUpdated[passphrase] = true;
+		res.sendStatus(200);
 	} catch (err) {
 	  console.error(err);
 	  res.sendStatus(500);
@@ -141,8 +166,9 @@ app.post(('/addItem/:bag_id'), async (req, res) => {
 	  const bag_id = result.rows[0].id;
 	  if (bag_id) {
 		  await pool.query(`INSERT INTO items (title, bag_id, is_checked, creation_date) VALUES
-							  ('Change Item Name', $1, FALSE, CURRENT_TIMESTAMP)`, [bag_id])
-	  }
+			('Change Item Name', $1, FALSE, CURRENT_TIMESTAMP)`, [bag_id])
+		}
+	isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 	  console.error(err);
@@ -154,6 +180,7 @@ app.post(('/addItem/:bag_id'), async (req, res) => {
 	try {
 	  const { item_id } = req.params
 	  await pool.query('DELETE FROM items WHERE id = $1', [item_id])
+	  isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 		console.error(err);
@@ -166,6 +193,7 @@ app.post(('/addItem/:bag_id'), async (req, res) => {
 	  const { bag_id } = req.params
 	  await pool.query('DELETE FROM items WHERE bag_id = $1', [bag_id])
 	  await pool.query('DELETE FROM bags WHERE id = $1', [bag_id])
+	  isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 		console.error(err);
@@ -177,6 +205,7 @@ app.put(('/changeChecker/:id'), async (req, res) => {
 	try {
 	  const { id } = req.params
 	  await pool.query('UPDATE items SET is_checked = NOT is_checked WHERE id = $1', [id])
+	  isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 	  console.error(err)
@@ -188,6 +217,7 @@ app.put(('/changeChecker/:id'), async (req, res) => {
 	try {
 	  const { id, color } = req.params
 	  await pool.query('UPDATE bags SET color = $1 WHERE id = $2', [color, id])
+	  isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 	  console.error(err)
@@ -200,6 +230,7 @@ app.put(('/changeChecker/:id'), async (req, res) => {
 	  let { id, new_title } = req.params
 	  new_title = new_title === 'null' ? null : new_title;
 	  await pool.query('UPDATE items SET title = $1 WHERE id = $2', [new_title, id])
+	//   isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 		console.error(err)
@@ -210,8 +241,10 @@ app.put(('/changeChecker/:id'), async (req, res) => {
   app.put(('/changeBagTitle/:id/:new_title'), async (req, res) => {
 	try {
 	  let { id, new_title } = req.params
+	  const passphrase = await pool.query('SELECT trip_id FROM bags WHERE id = $1', [id])
 	  new_title = new_title === 'null' ? null : new_title;
 	  await pool.query('UPDATE bags SET title = $1 WHERE id = $2', [new_title, id])
+	  isUpdated[passphrase] = true;
 	  res.sendStatus(200);
 	} catch (err) {
 		console.error(err)
@@ -233,8 +266,12 @@ app.put(('/changeChecker/:id'), async (req, res) => {
 app.get(('/getBagFromId/:id'), async (req, res) => {
 	try {
 	  const { id } = req.params
-	  const bags = await pool.query('SELECT * FROM bags WHERE id = $1', [id])
-	  res.json(bags.rows)
+	  if (isUpdated[passphrase]) {
+		  const bags = await pool.query('SELECT * FROM bags WHERE id = $1', [id])
+		  res.json(bags.rows)
+	  } else {
+		  res.sendStatus(304);
+	  }
 	} catch (err) {
 	  console.error(err)
 	}

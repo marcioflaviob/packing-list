@@ -12,7 +12,7 @@ const App = () => {
   const [bags, setBags] = useState([]);
   const [id, setId] = useState(params.id || '');
   const [hasPin, setHasPin] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(hasPin ? false : true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // const fetchItems = async () => {
   //   if (id) {
@@ -57,18 +57,32 @@ const App = () => {
     const response = await fetch(`http://localhost:8000/getPassphrase`);
     const data = await response.text();
     await initialize(data);
+    localStorage.setItem('previousId', data);
     setId(data);
   }, []);
   
   const fetchAndInitialize = useCallback(async () => {
     if (!id) {
-      await fetchId();
-    } else if (!isAuthenticated && await fetch(`http://localhost:8000/hasPin/${id}`).then(res => res.json())) {
+      if (localStorage.getItem('previousId')) {
+        setId(localStorage.getItem('previousId'));
+      } else {
+        await fetchId();
+      }
+    } else if (!isAuthenticated) {
+      const response = await fetch(`http://localhost:8000/hasPin/${id}`);
+      if (response.status === 400) {
+        if (localStorage.getItem('previousId') === id) {
+          localStorage.removeItem('previousId');
+        }
+        window.location.href = '/';
+      } else if (await response.json()) {
         setHasPin(true);
     } else {
-        await fetchItems();
-        await fetchBags();
+      setIsAuthenticated(true);
+      await fetchItems();
+      await fetchBags();
     }
+  }
   }, [id, isAuthenticated, fetchItems, fetchBags, fetchId]);
   
   
@@ -81,10 +95,14 @@ const App = () => {
     fetchBags();
   }, [isAuthenticated, fetchBags, fetchItems]);
 
+  useEffect(() => {
+    console.log('isAuthenticated changed:', isAuthenticated);
+  }, [isAuthenticated]);
+
   return (
     <div className='app' style={{zIndex: 0}}>
-      {hasPin && <InsertPin passphrase={id} setIsAuthenticated={setIsAuthenticated} />}
-      {isAuthenticated && <SaveHeader passphrase={id} />}
+      {(hasPin && !isAuthenticated) && <InsertPin passphrase={id} setIsAuthenticated={setIsAuthenticated} />}
+      {isAuthenticated && <SaveHeader passphrase={id} setHasPin={setHasPin} hasPin={hasPin} />}
       {isAuthenticated && <div className='bottom-components'>
         <div className='component'>
           <ItemsManager passphrase={id} items={items} bags={bags} fetchBags={fetchBags} fetchItems={fetchItems} />

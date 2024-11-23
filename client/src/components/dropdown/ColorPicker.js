@@ -37,32 +37,28 @@ const ColorPicker = ({ bag, fetchItems, fetchBags }) => {
         };
     }, []);
 
-	const handleDropdownClick = (e) => {
-        e.stopPropagation();
-    };
+	// const handleDropdownClick = (e) => {
+    //     e.stopPropagation();
+    // };
 
 	return (
-		<div onClick={handleDropdownClick}>
-			<div>
-					<div
+		<div
 						className='color-option'
 						onClick={handleClick}
 						style={{ backgroundColor: bag ? `#${colors[bag.color]}` : '#000000' }}>
 						<CgColorPicker />
-					</div>
 				{dropdownOpen &&
 					<div className='dropdown-bag-wrapper'>
 						{colors.map((color, index) => (
 							<div
 								key={index}
-								className={`dot color-option ${selectedColor === color ? 'selected' : ''}`}
+								className={`dot color-option-dropdown ${selectedColor === color ? 'selected' : ''}`}
 								style={{ backgroundColor: `#${color}` }}
 								onClick={() => handleColorSelect(index)}
 							/>
 						))}
 					</div>
 				}
-			</div>
 		</div>
 	)};
   

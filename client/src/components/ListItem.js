@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const ListItem = ({ item }) => {
+const ListItem = ({ item, onFocus, onBlur }) => {
 	const [title, setTitle] = useState(item.title || '');
 
 	const handleInputChange = (event) => {
@@ -14,6 +14,15 @@ const ListItem = ({ item }) => {
 			'Content-Type': 'application/json'
 		  },
 		});
+		if (onBlur) {
+			onBlur();
+		}
+	  };
+
+	  const handleInputFocus = () => {
+		if (onFocus) {
+		  onFocus();
+		}
 	  };
 
 	return (
@@ -24,6 +33,7 @@ const ListItem = ({ item }) => {
 			value={title}
 			onChange={handleInputChange}
 			onBlur={handleInputBlur}
+			onFocus={handleInputFocus}
 			/>
 	  </div>
 	)
